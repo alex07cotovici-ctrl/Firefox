@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Start</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Space+Grotesk:wght@300;400;500&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --glass: rgba(14,20,26,.38);
+  --line: rgba(255,255,255,.10);
+  --txt:#eef3f4; --dim:#9fb0b6;
+  --accent:#8ff0dc; --accent2:#a8b8ff; --warm:#ffc98b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:Inter,system-ui,sans-serif;color:var(--txt);background:#070b10;overflow:hidden}
+button{font:inherit;color:inherit}
+
+/* ---------------- scene ---------------- */
+#scene{position:fixed;inset:-40px;z-index:0;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+#scene .layer{position:absolute;inset:0;transition:transform .9s cubic-bezier(.2,.7,.2,1)}
+#scene svg{width:100%;height:100%;display:block}
+#aurora{position:fixed;inset:0;z-index:0;pointer-events:none;mix-blend-mode:screen;opacity:0;transition:opacity 2s}
+#aurora i{position:absolute;left:-20%;width:140%;height:50%;filter:blur(50px);border-radius:50%;animation:aur 22s ease-in-out infinite alternate}
+#aurora i:nth-child(1){top:-10%;background:linear-gradient(90deg,transparent,rgba(80,255,190,.35),rgba(120,160,255,.25),transparent)}
+#aurora i:nth-child(2){top:2%;background:linear-gradient(90deg,transparent,rgba(170,110,255,.22),rgba(80,255,200,.25),transparent);animation-duration:30s;animation-delay:-8s}
+@keyframes aur{0%{transform:translateX(-8%) skewY(-4deg) scaleY(.7)}100%{transform:translateX(8%) skewY(3deg) scaleY(1.1)}}
+.fog{position:fixed;left:-50%;width:200%;height:38%;z-index:1;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(200,215,225,.14),transparent 62%);filter:blur(24px);animation:drift 70s linear infinite alternate}
+.fog.f1{top:42%}.fog.f2{top:62%;animation-duration:100s;animation-direction:alternate-reverse;opacity:.8}
+@keyframes drift{from{transform:translateX(-14%)}to{transform:translateX(14%)}}
+#fx{position:fixed;inset:0;z-index:2;pointer-events:none}
+.vignette{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(ellipse at 50% 38%,transparent 30%,rgba(0,0,0,.7) 100%)}
+#spot{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(500px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.045),transparent 60%)}
+
+/* ---------------- layout ---------------- */
+main{position:relative;z-index:5;height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;padding:24px}
+.glass{background:var(--glass);border:1px solid var(--line);border-radius:20px;
+  backdrop-filter:blur(20px) saturate(150%);-webkit-backdrop-filter:blur(20px) saturate(150%);
+  box-shadow:0 12px 40px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.06)}
+
+.hero{text-align:center;user-select:none}
+#greet{font-family:"Instrument Serif",serif;font-style:italic;font-size:clamp(20px,2.2vw,28px);color:#d6e2e5;opacity:.9}
+#clock{font-family:"Space Grotesk",sans-serif;font-weight:300;font-size:clamp(84px,12vw,168px);line-height:1;letter-spacing:-.03em;
+  display:flex;justify-content:center;align-items:flex-start;text-shadow:0 0 40px rgba(143,240,220,.15),0 6px 30px rgba(0,0,0,.45)}
+.dg{display:inline-block;width:.6em;text-align:center;overflow:hidden;height:1.05em;position:relative}
+.dg span{display:block;transition:transform .5s cubic-bezier(.6,0,.2,1),opacity .5s}
+.dg.out span{transform:translateY(-60%);opacity:0}
+.colon{width:.3em;text-align:center;animation:blink 2s steps(1) infinite;opacity:.8}
+@keyframes blink{50%{opacity:.25}}
+#secs{font-size:.22em;color:var(--dim);margin:.5em 0 0 .35em;width:1.4em;text-align:left;font-weight:400}
+#date{color:var(--dim);font-size:14px;letter-spacing:.12em;text-transform:uppercase;margin-top:10px}
+#moon{display:inline-block;margin-left:8px}
+
+/* ---------------- search ---------------- */
+.swrap{position:relative;width:min(660px,92vw)}
+.search{display:flex;align-items:center;gap:12px;padding:0 20px;height:58px;border-radius:999px;transition:.25s}
+.search svg{flex:none;opacity:.65}
+.search input{flex:1;background:none;border:0;outline:0;color:var(--txt);font:inherit;font-size:17px}
+.search input::placeholder{color:#8a9aa0}
+.engine{font-size:12px;padding:4px 11px;border-radius:999px;background:rgba(143,240,220,.14);color:var(--accent);white-space:nowrap;transition:.2s}
+kbd{font-family:inherit;font-size:11px;padding:2px 7px;border:1px solid var(--line);border-radius:6px;color:var(--dim)}
+.swrap:focus-within .search{border-color:rgba(143,240,220,.45);box-shadow:0 0 0 5px rgba(143,240,220,.07),0 0 60px rgba(143,240,220,.12)}
+#sugg{position:absolute;top:66px;left:0;right:0;padding:8px;display:none;z-index:10}
+#sugg.show{display:block}
+.sg{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:12px;cursor:pointer;font-size:14px}
+.sg small{color:var(--dim);margin-left:auto;font-size:12px}
+.sg.sel,.sg:hover{background:rgba(255,255,255,.08)}
+.sg .mini{background-size:cover!important;width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:12px;font-weight:600}
+
+/* ---------------- dock ---------------- */
+.dock{display:flex;align-items:flex-end;gap:8px;padding:10px 14px;border-radius:24px;height:84px}
+.app{position:relative;display:flex;flex-direction:column;align-items:center;text-decoration:none;color:var(--txt);transform-origin:bottom center;transition:transform .18s cubic-bezier(.3,.7,.3,1.4)}
+.app .ic{width:52px;height:52px;border-radius:15px;display:grid;place-items:center;font-weight:600;font-size:20px;color:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.3),inset 0 -8px 16px rgba(0,0,0,.15)}
+.app .lbl{position:absolute;bottom:calc(100% + 10px);font-size:12px;padding:4px 9px;border-radius:8px;background:rgba(10,14,18,.85);border:1px solid var(--line);
+  opacity:0;transform:translateY(4px);transition:.15s;white-space:nowrap;pointer-events:none}
+.app:hover .lbl{opacity:1;transform:none}
+.app .num{position:absolute;bottom:-14px;font-size:9px;color:var(--dim);opacity:.6}
+.app .ic.img{background-size:cover!important;background-position:center!important;font-size:0}
+.app.drop .ic{outline:2px dashed var(--accent);outline-offset:3px}
+.dock .sep{width:1px;height:46px;background:var(--line);margin:0 4px 3px}
+.gear{width:40px;height:40px;border-radius:12px;border:1px dashed var(--line);background:none;cursor:pointer;color:var(--dim);margin-bottom:6px}
+.gear:hover{color:var(--txt);background:rgba(255,255,255,.06)}
+
+/* ---------------- cards ---------------- */
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:min(1040px,94vw)}
+.card{padding:16px 18px;position:relative;overflow:hidden}
+.card h3{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);font-weight:600;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.tb{background:none;border:0;color:var(--dim);cursor:pointer;font-size:11px;padding:3px 7px;border-radius:6px;letter-spacing:.05em}
+.tb:hover{color:var(--txt);background:rgba(255,255,255,.08)}
+.card::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;
+  background:radial-gradient(260px circle at var(--cx,50%) var(--cy,50%),rgba(255,255,255,.07),transparent 60%);opacity:0;transition:opacity .3s}
+.card:hover::after{opacity:1}
+
+/* focus */
+.focus{display:flex;gap:16px;align-items:center}
+.tring{position:relative;width:104px;height:104px;flex:none;cursor:pointer}
+.tring svg{position:absolute;inset:0}
+.tring .t{position:absolute;inset:0;display:grid;place-items:center;font-family:"Space Grotesk";font-size:24px;font-weight:300}
+.tring .t small{display:block;font-family:Inter;font-size:10px;color:var(--dim);text-align:center;margin-top:-4px;letter-spacing:.1em;text-transform:uppercase}
+.fctl{flex:1;display:flex;flex-direction:column;gap:8px}
+.row{display:flex;gap:6px;flex-wrap:wrap}
+.pill{border:1px solid var(--line);background:rgba(255,255,255,.05);border-radius:999px;padding:5px 11px;font-size:12px;cursor:pointer;transition:.15s}
+.pill:hover{background:rgba(255,255,255,.12)}
+.pill.on{background:rgba(143,240,220,.16);border-color:rgba(143,240,220,.5);color:var(--accent)}
+.sound .pill.on{background:rgba(168,184,255,.16);border-color:rgba(168,184,255,.5);color:var(--accent2)}
+.mini-l{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+#streak{font-size:12px;color:var(--dim)}
+
+/* term flip card */
+.flip{perspective:900px;height:128px;cursor:pointer}
+.flip-in{position:relative;width:100%;height:100%;transition:transform .7s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d}
+.flip.on .flip-in{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center}
+.face.back{transform:rotateY(180deg)}
+#term{font-family:"Instrument Serif",serif;font-size:34px;line-height:1.05}
+#tcat{font-size:11px;color:var(--warm);letter-spacing:.14em;text-transform:uppercase;margin-top:8px}
+.hint{font-size:11px;color:var(--dim);margin-top:10px}
+#tdef{font-size:14.5px;line-height:1.5;color:#dbe5e8}
+
+/* countdown */
+#cdName{font-size:13px;color:var(--dim)}
+#cdBig{font-family:"Space Grotesk";font-size:42px;font-weight:300;line-height:1.1;margin:2px 0 4px}
+#cdBig small{font-size:14px;color:var(--dim);margin-left:4px}
+#cdSub{font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:12px}
+.bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--warm));background-size:200% 100%;animation:shim 6s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+.barl{display:flex;justify-content:space-between;font-size:11px;color:var(--dim);margin-top:6px}
+
+/* corner controls */
+.corner{position:fixed;top:16px;right:16px;z-index:6;display:flex;gap:8px}
+.corner button{height:34px;padding:0 12px;border-radius:999px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px}
+.corner button:hover{background:rgba(255,255,255,.1)}
+.foot{position:fixed;bottom:14px;left:0;right:0;text-align:center;z-index:5;font-size:12px;color:#7f8f95}
+.foot a{color:#a9b9bf;text-decoration:none;border-bottom:1px dotted #6d7d83}
+#quote{font-family:"Instrument Serif",serif;font-style:italic;font-size:15px;color:#b8c6ca}
+
+/* modal */
+.modal{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.55);display:none;place-items:center}
+.modal.show{display:grid}
+.mbox{width:min(440px,92vw);padding:20px;display:flex;flex-direction:column;gap:10px;max-height:80vh;overflow:auto}
+.mbox h4{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.mbox input{background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:var(--txt);font:inherit;font-size:14px;outline:0;width:100%}
+.lrow{display:flex;align-items:center;gap:10px;padding:6px 4px;font-size:14px}
+.lrow .mini{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-weight:600;font-size:13px;cursor:pointer;position:relative;background-size:cover!important;background-position:center!important;flex:none}
+.lrow .mini:hover::after{content:"📷";position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.55);border-radius:inherit;font-size:14px}
+.lrow .rp{color:var(--dim)!important;font-size:11px}
+.hintline{font-size:12px;color:var(--dim);line-height:1.5}
+.filebtn{border:1px dashed var(--line);border-radius:10px;padding:9px 12px;font-size:13px;color:var(--dim);cursor:pointer;white-space:nowrap}
+.filebtn.has{color:var(--accent);border-color:rgba(143,240,220,.5)}
+.lrow span{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow small{color:var(--dim);font-size:11px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow button{background:none;border:0;color:#ff9e9e;cursor:pointer}
+.two{display:flex;gap:8px}
+
+/* entrance */
+.rise{opacity:0;transform:translateY(14px);animation:rise .9s cubic-bezier(.2,.7,.2,1) forwards}
+@keyframes rise{to{opacity:1;transform:none}}
+
+@media (max-width:920px){
+  body{overflow:auto}
+  main{height:auto;min-height:100vh;padding:70px 16px 70px}
+  .grid{grid-template-columns:1fr}
+  .dock{overflow-x:auto;max-width:94vw}
+}
+</style>
+</head>
+<body>
+<div id="scene"></div>
+<div id="aurora"><i></i><i></i></div>
+<div class="fog f1"></div><div class="fog f2"></div>
+<canvas id="fx"></canvas>
+<div id="spot"></div>
+<div class="vignette"></div>
+
+<div class="corner">
+  <button class="glass" id="fxBtn" title="Change atmosphere">✦ Fireflies</button>
+  <button class="glass" id="skyBtn" title="Change sky">◐ Auto</button>
+</div>
+
+<main>
+  <div class="hero rise">
+    <div id="greet">Good evening, Alex</div>
+    <div id="clock"></div>
+    <div id="date"></div>
+  </div>
+
+  <div class="swrap rise" style="animation-delay:.1s">
+    <form class="search glass" id="sform" autocomplete="off">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" placeholder="Search, type a site, or try !y !p !c !gpt" autofocus>
+      <span class="engine" id="engine">Google</span>
+      <kbd>/</kbd>
+    </form>
+    <div id="sugg" class="glass"></div>
+  </div>
+  <a id="go" href="#" target="_blank" rel="noopener" hidden></a>
+
+  <nav class="dock glass rise" id="dock" style="animation-delay:.2s"></nav>
+
+  <section class="grid rise" style="animation-delay:.3s">
+    <div class="card glass">
+      <h3>Focus <span id="streak"></span></h3>
+      <div class="focus">
+        <div class="tring" id="tring" title="Click to start / pause">
+          <svg viewBox="0 0 104 104"><circle cx="52" cy="52" r="45" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="6"/>
+            <circle id="tarc" cx="52" cy="52" r="45" fill="none" stroke="url(#tg)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 52 52)"/>
+            <defs><linearGradient id="tg"><stop offset="0" stop-color="#8ff0dc"/><stop offset="1" stop-color="#a8b8ff"/></linearGradient></defs></svg>
+          <div class="t"><div><span id="tdisp">25:00</span><small id="tstate">start</small></div></div>
+        </div>
+        <div class="fctl">
+          <div class="row" id="lens"><button class="pill on" data-m="25">25m</button><button class="pill" data-m="50">50m</button><button class="pill" data-m="5">Break</button><button class="pill" id="treset">↺</button></div>
+          <div class="mini-l">Ambient sound</div>
+          <div class="row sound" id="sounds"><button class="pill" data-s="rain">Rain</button><button class="pill" data-s="brown">Brown</button><button class="pill" data-s="wind">Wind</button></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card glass" id="termCard">
+      <h3>Term of the day <span><button class="tb" id="nextTerm">Next →</button></span></h3>
+      <div class="flip" id="flip">
+        <div class="flip-in">
+          <div class="face"><div id="term"></div><div id="tcat"></div><div class="hint">Click to reveal</div></div>
+          <div class="face back"><div id="tdef"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card glass">
+      <h3>Countdown <span><button class="tb" id="cdEdit">Edit</button></span></h3>
+      <div id="cdName"></div>
+      <div id="cdBig"></div>
+      <div id="cdSub"></div>
+      <div class="bar"><i id="ybar"></i></div>
+      <div class="barl"><span id="yl"></span><span id="yr"></span></div>
+    </div>
+  </section>
+</main>
+
+<div class="foot"><span id="quote"></span> &nbsp;·&nbsp; <a href="https://www.accuweather.com/en/md/chisinau/242405/weather-forecast/242405" target="_blank" rel="noopener">Chișinău weather ↗</a></div>
+
+<!-- shortcuts modal -->
+<div class="modal" id="lm"><div class="mbox glass">
+  <h4>Edit shortcuts</h4>
+  <div class="hintline">Click an icon to give it a photo, or drag an image straight onto an icon in the dock.</div>
+  <div id="llist"></div>
+  <form id="lform" style="display:flex;flex-direction:column;gap:8px"><div class="two"><input id="ln" placeholder="Name" required style="flex:1"><input id="lu" placeholder="site.com" required style="flex:1.4"></div>
+    <div class="two"><input id="li" placeholder="Image link (optional)" style="flex:1"><label class="filebtn" id="lfl">📷 Photo<input type="file" id="lf" accept="image/*" hidden></label><button class="pill on">Add</button></div></form>
+  <input type="file" id="pick" accept="image/*" hidden>
+  <div style="display:flex;justify-content:space-between"><button class="pill" id="lreset">Reset defaults</button><button class="pill" id="lclose">Done</button></div>
+</div></div>
+<!-- countdown modal -->
+<div class="modal" id="cm"><form class="mbox glass" id="cform">
+  <h4>Count down to…</h4>
+  <input id="cn" placeholder="e.g. Anatomy exam" required>
+  <input id="cd" type="datetime-local" required>
+  <div style="display:flex;justify-content:flex-end;gap:8px"><button type="button" class="pill" id="cclose">Cancel</button><button class="pill on">Save</button></div>
+</form></div>
+
+<script>
+const $=id=>document.getElementById(id);
+let TOP=false;try{TOP=window.top===window}catch(e){}
+const TGT=TOP?'_self':'_blank';
+const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+const pad=n=>String(n).padStart(2,'0');
+
+/* =============== SKY / SCENE =============== */
+const skies={
+  night:{sky:['#060a14','#0d1626','#16222b'],glow:'#9fb4ff',glowA:.18,trees:['#1b2733','#121b24','#0b1219','#05090d'],mist:'#5f7280',stars:1,aurora:1,moon:1},
+  dawn:{sky:['#2b2f4a','#a0727a','#e6b48c'],glow:'#ffd7a8',glowA:.55,trees:['#5a5260','#3c3846','#262430','#141319'],mist:'#d8b8a8',stars:.15,aurora:0,moon:0},
+  day:{sky:['#5d6e74','#8a9a9e','#2b363a'],glow:'#e8f0f0',glowA:.5,trees:['#3d4b52','#2a353b','#1a2226','#0d1316'],mist:'#9fb0b4',stars:0,aurora:0,moon:0},
+  dusk:{sky:['#1a1630','#5b3a5c','#c7745a'],glow:'#ff9e6e',glowA:.45,trees:['#3b2f45','#2a2234','#1a1622','#0c0a10'],mist:'#a88090',stars:.4,aurora:0,moon:0},
+};
+const skyOrder=['auto','night','dawn','day','dusk'];
+let skyMode=store.get('nt_sky','auto');
+function autoSky(){const h=new Date().getHours();return h>=21||h<6?'night':h<9?'dawn':h<17?'day':'dusk'}
+function buildScene(){
+  const S=skies[skyMode==='auto'?autoSky():skyMode];
+  const W=1600,H=900;let seed=7;const rnd=()=>(seed=(seed*16807)%2147483647)/2147483647;
+  function pine(x,base,h,w,col){let p=`<rect x="${x-w*.035}" y="${base-h*.16}" width="${w*.07}" height="${h*.22}" fill="${col}"/>`;
+    const tiers=8+Math.floor(rnd()*4);
+    for(let i=0;i<tiers;i++){const t=i/tiers,y=base-h*.1-h*t*.9,ww=w*(1-t*.88)*(.8+rnd()*.35),hh=h/tiers*1.9,j=(rnd()-.5)*ww*.08;
+      p+=`<path d="M${x-ww/2+j},${y} Q${x-ww*.14},${y-hh*.42} ${x},${y-hh} Q${x+ww*.14},${y-hh*.42} ${x+ww/2+j},${y} Z" fill="${col}"/>`}
+    return p}
+  const L=[{n:30,h:[220,340],base:620,op:.5,blur:3.5},{n:22,h:[320,480],base:690,op:.72,blur:1.6},{n:15,h:[460,680],base:780,op:.92,blur:0},{n:8,h:[680,980],base:960,op:1,blur:0}];
+  let defs=`<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.sky[0]}"/><stop offset=".6" stop-color="${S.sky[1]}"/><stop offset="1" stop-color="${S.sky[2]}"/></linearGradient>
+    <radialGradient id="glow" cx=".5" cy=".2" r=".55"><stop offset="0" stop-color="${S.glow}" stop-opacity="${S.glowA}"/><stop offset="1" stop-color="${S.glow}" stop-opacity="0"/></radialGradient>
+    <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${S.mist}" stop-opacity="0"/><stop offset="1" stop-color="${S.mist}" stop-opacity=".32"/></linearGradient>
+    <radialGradient id="moonG"><stop offset="0" stop-color="#fffbe8"/><stop offset=".55" stop-color="#f4f0dc"/><stop offset="1" stop-color="#d9d5c4"/></radialGradient>
+    <radialGradient id="halo"><stop offset="0" stop-color="#cfe0ff" stop-opacity=".35"/><stop offset="1" stop-color="#cfe0ff" stop-opacity="0"/></radialGradient>
+    <filter id="b0"><feGaussianBlur stdDeviation="3.5"/></filter><filter id="b1"><feGaussianBlur stdDeviation="1.6"/></filter></defs>`;
+  let stars='';if(S.stars){for(let i=0;i<260;i++){const r=rnd()*1.3+.2;stars+=`<circle cx="${rnd()*W}" cy="${rnd()*H*.55}" r="${r}" fill="#fff" opacity="${(rnd()*.7+.2)*S.stars}"><animate attributeName="opacity" values="${.2*S.stars};${.9*S.stars};${.2*S.stars}" dur="${3+rnd()*5}s" begin="-${rnd()*5}s" repeatCount="indefinite"/></circle>`}}
+  let moon=S.moon?`<circle cx="1180" cy="170" r="160" fill="url(#halo)"/><circle cx="1180" cy="170" r="46" fill="url(#moonG)"/><circle cx="1166" cy="160" r="8" fill="#000" opacity=".06"/><circle cx="1196" cy="186" r="11" fill="#000" opacity=".05"/>`:'';
+  const back=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice">${defs}<rect width="${W}" height="${H}" fill="url(#sky)"/><rect width="${W}" height="${H}" fill="url(#glow)"/>${stars}${moon}</svg>`;
+  let html=`<div class="layer" data-d="4">${back}</div>`;
+  L.forEach((l,i)=>{let g='';for(let k=0;k<l.n;k++){const x=(k+rnd()*.8)/l.n*W*1.1-W*.05,h=l.h[0]+rnd()*(l.h[1]-l.h[0]);g+=pine(x,l.base+rnd()*40,h,h*.32,S.trees[i])}
+    html+=`<div class="layer" data-d="${8+i*10}"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice">${defs}<g opacity="${l.op}" ${l.blur?`filter="url(#b${i})"`:''}>${g}</g>${i<3?`<rect y="${H*.3}" width="${W}" height="${H*.7}" fill="url(#mist)" opacity="${.85-i*.25}"/>`:''}</svg></div>`});
+  $('scene').innerHTML=html;
+  $('aurora').style.opacity=S.aurora?1:0;
+  $('skyBtn').textContent='◐ '+(skyMode==='auto'?'Auto':skyMode[0].toUpperCase()+skyMode.slice(1));
+  isNight=!!S.stars&&S.stars>.5;
+}
+let isNight=false;buildScene();
+$('skyBtn').onclick=()=>{skyMode=skyOrder[(skyOrder.indexOf(skyMode)+1)%skyOrder.length];store.set('nt_sky',skyMode);buildScene()};
+setInterval(()=>{if(skyMode==='auto')buildScene()},10*60*1000);
+
+/* parallax + spotlight */
+addEventListener('mousemove',e=>{
+  const nx=e.clientX/innerWidth-.5,ny=e.clientY/innerHeight-.5;
+  document.querySelectorAll('#scene .layer').forEach(l=>{const d=+l.dataset.d;l.style.transform=`translate(${-nx*d}px,${-ny*d*.5}px)`});
+  document.body.style.setProperty('--mx',e.clientX+'px');document.body.style.setProperty('--my',e.clientY+'px');
+});
+document.querySelectorAll('.card').forEach(c=>c.addEventListener('mousemove',e=>{const r=c.getBoundingClientRect();c.style.setProperty('--cx',e.clientX-r.left+'px');c.style.setProperty('--cy',e.clientY-r.top+'px')}));
+
+/* =============== ATMOSPHERE PARTICLES =============== */
+const fxModes=[['fireflies','✦ Fireflies'],['snow','❄ Snow'],['rain','☂ Rain'],['off','○ Off']];
+let fxMode=store.get('nt_fx','fireflies');
+(function(){
+  const c=$('fx'),x=c.getContext('2d');let P=[],shoot=null,dpr=devicePixelRatio||1;
+  function init(){c.width=innerWidth*dpr;c.height=innerHeight*dpr;P=[];
+    const n=fxMode==='rain'?Math.round(innerWidth/5):fxMode==='snow'?Math.round(innerWidth/9):fxMode==='fireflies'?40:0;
+    for(let i=0;i<n;i++)P.push({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random(),s:Math.random()*.6+.4,w:Math.random()*6.28,p:Math.random()*6.28})}
+  window.fxInit=init;init();addEventListener('resize',init);
+  function frame(t){x.clearRect(0,0,c.width,c.height);
+    if(fxMode==='snow'){x.fillStyle='rgba(240,246,248,.75)';for(const p of P){p.y+=p.s*1.1*dpr;p.w+=.012;p.x+=Math.sin(p.w)*.5*dpr;if(p.y>c.height){p.y=-6;p.x=Math.random()*c.width}x.beginPath();x.arc(p.x,p.y,(p.r*1.8+.5)*dpr,0,7);x.fill()}}
+    else if(fxMode==='rain'){x.strokeStyle='rgba(190,210,225,.28)';x.lineWidth=1*dpr;x.beginPath();for(const p of P){p.y+=(p.s*14+10)*dpr;p.x-=2*dpr;if(p.y>c.height){p.y=-20;p.x=Math.random()*c.width*1.1}x.moveTo(p.x,p.y);x.lineTo(p.x+2*dpr,p.y-(10+p.r*12)*dpr)}x.stroke()}
+    else if(fxMode==='fireflies'){for(const p of P){p.w+=.006*p.s;p.x+=Math.cos(p.w*2.3)*.45*dpr;p.y+=Math.sin(p.w*1.7)*.35*dpr-.05*dpr;
+      if(p.y<c.height*.35)p.y=c.height;if(p.x<0)p.x=c.width;if(p.x>c.width)p.x=0;
+      const a=(Math.sin(t/600*p.s+p.p)+1)/2;const g=x.createRadialGradient(p.x,p.y,0,p.x,p.y,10*dpr);
+      g.addColorStop(0,`rgba(230,255,170,${.9*a})`);g.addColorStop(1,'rgba(200,255,140,0)');x.fillStyle=g;x.beginPath();x.arc(p.x,p.y,10*dpr,0,7);x.fill()}}
+    // shooting star at night
+    if(isNight){if(!shoot&&Math.random()<.0025)shoot={x:Math.random()*c.width*.7+c.width*.1,y:Math.random()*c.height*.25,l:0};
+      if(shoot){shoot.l+=1;const k=shoot.l*14*dpr,len=120*dpr,al=Math.max(0,1-shoot.l/45);
+        const g=x.createLinearGradient(shoot.x+k,shoot.y+k*.4,shoot.x+k-len,shoot.y+k*.4-len*.4);g.addColorStop(0,`rgba(255,255,255,${al})`);g.addColorStop(1,'rgba(255,255,255,0)');
+        x.strokeStyle=g;x.lineWidth=1.6*dpr;x.beginPath();x.moveTo(shoot.x+k,shoot.y+k*.4);x.lineTo(shoot.x+k-len,shoot.y+k*.4-len*.4);x.stroke();if(shoot.l>45)shoot=null}}
+    requestAnimationFrame(frame)}
+  requestAnimationFrame(frame);
+})();
+function setFxLabel(){$('fxBtn').textContent=fxModes.find(m=>m[0]===fxMode)[1]}
+setFxLabel();
+$('fxBtn').onclick=()=>{const i=fxModes.findIndex(m=>m[0]===fxMode);fxMode=fxModes[(i+1)%fxModes.length][0];store.set('nt_fx',fxMode);setFxLabel();fxInit()};
+
+/* =============== CLOCK =============== */
+const clk=$('clock');
+clk.innerHTML='<span class="dg"><span>0</span></span><span class="dg"><span>0</span></span><span class="colon">:</span><span class="dg"><span>0</span></span><span class="dg"><span>0</span></span><span id="secs">00</span>';
+const digs=[...clk.querySelectorAll('.dg')];
+function setDigit(el,v){const s=el.firstChild;if(s.textContent===v)return;el.classList.add('out');setTimeout(()=>{s.textContent=v;el.classList.remove('out')},250)}
+function moonPhase(d){const lp=2551443,nm=new Date(1970,0,7,20,35,0);const ph=((d-nm)/1000)%lp/lp;return['🌑','🌒','🌓','🌔','🌕','🌖','🌗','🌘'][Math.floor(ph*8+.5)%8]}
+function tick(){
+  const d=new Date(),h=d.getHours(),s=pad(h)+pad(d.getMinutes());
+  [...s].forEach((v,i)=>setDigit(digs[i],v));$('secs').textContent=pad(d.getSeconds());
+  const g=h<5?'Burning the midnight oil':h<12?'Good morning':h<18?'Good afternoon':h<22?'Good evening':'Good night';
+  $('greet').textContent=`${g}, Alex`;
+  $('date').innerHTML=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long'})+`<span id="moon" title="Moon phase">${moonPhase(d)}</span>`;
+  cdTick(d);
+}
+
+/* =============== SEARCH + SUGGESTIONS =============== */
+const bangs={y:['YouTube','https://www.youtube.com/results?search_query='],p:['PubMed','https://pubmed.ncbi.nlm.nih.gov/?term='],w:['Wikipedia','https://en.wikipedia.org/w/index.php?search='],
+  gpt:['ChatGPT','https://chatgpt.com/?q='],c:['Claude','https://claude.ai/new?q='],m:['Maps','https://www.google.com/maps/search/'],i:['Images','https://www.google.com/search?tbm=isch&q='],
+  t:['Translate','https://translate.google.com/?sl=auto&tl=en&text='],gh:['GitHub','https://github.com/search?q='],r:['Reddit','https://www.reddit.com/search/?q=']};
+function parse(v){const m=v.match(/(?:^|\s)!(\w+)(?:\s|$)/);if(m&&bangs[m[1]])return{b:bangs[m[1]],q:v.replace(m[0],' ').trim()};return{b:['Google','https://www.google.com/search?q='],q:v.trim()}}
+function open(url){if(TOP){location.href=url;return}const a=$('go');a.href=url;a.click()}
+let sel=-1,items=[];
+function suggest(){
+  const v=$('q').value.trim().toLowerCase();items=[];
+  if(v){
+    links.forEach(([n,u,c,img])=>{if(n.toLowerCase().includes(v)||u.toLowerCase().includes(v))items.push({t:n,sub:u.replace(/^https?:\/\//,''),url:u,c,img,ch:n[0]})});
+    if(v.startsWith('!'))Object.entries(bangs).forEach(([k,[n]])=>{if(('!'+k).startsWith(v.split(' ')[0]))items.push({t:`!${k}`,sub:'Search '+n,bang:k,c:'rgba(255,255,255,.1)',ch:'!'})});
+  }
+  items=items.slice(0,6);sel=-1;
+  $('sugg').innerHTML=items.map((it,i)=>`<div class="sg" data-i="${i}"><span class="mini" style="${it.img?icStyle(it.c,it.img):'background:'+it.c}">${it.img?'':esc(it.ch)}</span>${esc(it.t)}<small>${it.sub}</small></div>`).join('');
+  $('sugg').classList.toggle('show',items.length>0);
+  $('sugg').querySelectorAll('.sg').forEach(el=>el.onmousedown=e=>{e.preventDefault();pick(items[+el.dataset.i])});
+}
+function pick(it){if(it.url){open(it.url);$('q').value='';suggest()}else{$('q').value='!'+it.bang+' ';$('q').focus();suggest();$('q').dispatchEvent(new Event('input'))}}
+$('q').addEventListener('input',e=>{$('engine').textContent=parse(e.target.value).b[0];suggest()});
+$('q').addEventListener('keydown',e=>{const n=items.length;if(!n)return;
+  if(e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();sel=(sel+(e.key==='ArrowDown'?1:-1)+n)%n;$('sugg').querySelectorAll('.sg').forEach((el,i)=>el.classList.toggle('sel',i===sel))}
+  if(e.key==='Enter'&&sel>=0){e.preventDefault();pick(items[sel])}
+  if(e.key==='Escape'){$('sugg').classList.remove('show')}});
+$('q').addEventListener('blur',()=>setTimeout(()=>$('sugg').classList.remove('show'),100));
+$('sform').addEventListener('submit',e=>{e.preventDefault();const v=$('q').value.trim();if(!v)return;
+  let url;if(/^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(v)||/^https?:\/\//.test(v))url=(/^https?:/.test(v)?'':'https://')+v;
+  else{const p=parse(v);url=p.b[1]+encodeURIComponent(p.q)}
+  open(url);$('q').value='';$('engine').textContent='Google';suggest()});
+addEventListener('keydown',e=>{
+  const typing=['INPUT','TEXTAREA'].includes(document.activeElement.tagName);
+  if(e.key==='/'&&!typing){e.preventDefault();$('q').focus()}
+  if(!typing&&/^[1-9]$/.test(e.key)&&links[+e.key-1]&&!e.ctrlKey&&!e.metaKey)open(links[+e.key-1][1]);
+  if(!typing&&e.key===' '&&document.activeElement===document.body){e.preventDefault();toggleTimer()}
+});
+
+/* =============== DOCK =============== */
+const defaults=[
+  ['YouTube','https://youtube.com','linear-gradient(135deg,#ff4d4d,#c4161c)'],['Mail','https://mail.google.com','linear-gradient(135deg,#ea6b5f,#b23121)'],
+  ['SIMU','https://simu.usmf.md','linear-gradient(135deg,#f0a14a,#b56414)'],['Moodle','https://moodle.org','linear-gradient(135deg,#f7a43b,#d4691a)'],
+  ['Drive','https://drive.google.com','linear-gradient(135deg,#34c27a,#1a8a4d)'],['Calendar','https://calendar.google.com','linear-gradient(135deg,#5d9bff,#2a5fd1)'],
+  ['Notion','https://notion.so','linear-gradient(135deg,#5b5b5b,#262626)'],['NotebookLM','https://notebooklm.google.com','linear-gradient(135deg,#8b7bff,#4d3bc8)'],
+  ['Claude','https://claude.ai','linear-gradient(135deg,#e8906a,#b8573a)'],['ChatGPT','https://chatgpt.com','linear-gradient(135deg,#2bc29a,#0c7a5c)'],
+  ['Gemini','https://gemini.google.com','linear-gradient(135deg,#7aa2ff,#9b6cf0)'],['PubMed','https://pubmed.ncbi.nlm.nih.gov','linear-gradient(135deg,#3d82c4,#1b4a7a)'],
+];
+const grads=['linear-gradient(135deg,#8ff0dc,#2aa58c)','linear-gradient(135deg,#a8b8ff,#5566d6)','linear-gradient(135deg,#ffc98b,#d4823a)','linear-gradient(135deg,#ff9ec4,#c4407a)','linear-gradient(135deg,#c6a8ff,#7444d6)'];
+let links=store.get('nt_links2',defaults);
+function renderDock(){
+  const d=$('dock');
+  d.innerHTML=links.map(([n,u,c,img],i)=>`<a class="app" data-i="${i}" href="${u}" target="${TGT}" rel="noopener"><span class="lbl">${esc(n)}</span><span class="ic${img?' img':''}" style="${icStyle(c,img)}">${esc(n[0].toUpperCase())}</span>${i<9?`<span class="num">${i+1}</span>`:''}</a>`).join('')+
+    `<span class="sep"></span><button class="gear" id="gear" title="Edit shortcuts">✎</button>`;
+  $('gear').onclick=openLM;
+  const apps=[...d.querySelectorAll('.app')];
+  d.onmousemove=e=>apps.forEach(a=>{const r=a.getBoundingClientRect(),dist=Math.abs(e.clientX-(r.left+r.width/2));const s=1+Math.max(0,1-dist/150)*.45;a.style.transform=`scale(${s}) translateY(${-(s-1)*14}px)`});
+  d.onmouseleave=()=>apps.forEach(a=>a.style.transform='');
+  apps.forEach(a=>{
+    a.addEventListener('dragover',e=>{e.preventDefault();a.classList.add('drop')});
+    a.addEventListener('dragleave',()=>a.classList.remove('drop'));
+    a.addEventListener('drop',async e=>{e.preventDefault();a.classList.remove('drop');const f=e.dataTransfer.files[0];
+      const i=+a.dataset.i;if(f&&f.type.startsWith('image/')){links[i][3]=await toIcon(f);save()}
+      else{const u=e.dataTransfer.getData('text/uri-list')||e.dataTransfer.getData('text/plain');if(/^https?:\/\//.test(u)){links[i][3]=u.trim();save()}}});
+  });
+}
+function esc(t){return String(t).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]))}
+function icStyle(c,img){return img?`background:url('${String(img).replace(/'/g,"%27")}') center/cover, ${c}`:`background:${c}`}
+/* resize any picked photo to a 160px square (center crop) so it stays small in storage */
+function toIcon(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{
+  const S=160,cv=document.createElement('canvas');cv.width=cv.height=S;const x=cv.getContext('2d');const m=Math.min(im.width,im.height);
+  x.drawImage(im,(im.width-m)/2,(im.height-m)/2,m,m,0,0,S,S);res(cv.toDataURL(file.type==='image/png'||file.type==='image/svg+xml'?'image/png':'image/jpeg',.88))};
+  im.onerror=rej;im.src=r.result};r.onerror=rej;r.readAsDataURL(file)})}
+function openLM(){renderLM();$('lm').classList.add('show')}
+let pickIdx=-1;
+function renderLM(){$('llist').innerHTML=links.map(([n,u,c,img],i)=>`<div class="lrow"><span class="mini" data-i="${i}" title="Set photo" style="${icStyle(c,img)}">${img?'':esc(n[0])}</span><span>${esc(n)}</span><small>${esc(u.replace(/^https?:\/\//,''))}</small>${img?`<button class="rp" data-r="${i}" title="Remove photo">no photo</button>`:''}<button data-d="${i}" title="Delete">✕</button></div>`).join('');
+  $('llist').querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{links.splice(+b.dataset.d,1);save();renderLM()});
+  $('llist').querySelectorAll('[data-r]').forEach(b=>b.onclick=()=>{links[+b.dataset.r].length=3;save();renderLM()});
+  $('llist').querySelectorAll('.mini').forEach(m=>m.onclick=()=>{pickIdx=+m.dataset.i;$('pick').value='';$('pick').click()})}
+$('pick').onchange=async e=>{const f=e.target.files[0];if(f&&pickIdx>=0){links[pickIdx][3]=await toIcon(f);save();renderLM()}};
+let newImg=null;
+$('lf').onchange=async e=>{const f=e.target.files[0];newImg=f?await toIcon(f):null;$('lfl').classList.toggle('has',!!newImg);$('lfl').firstChild.textContent=newImg?'✓ Photo':'📷 Photo'};
+function save(){store.set('nt_links2',links);renderDock();suggest()}
+$('lform').addEventListener('submit',e=>{e.preventDefault();let u=$('lu').value.trim();if(!/^https?:/.test(u))u='https://'+u;const it=[$('ln').value.trim(),u,grads[links.length%grads.length]];const im=newImg||$('li').value.trim();if(im)it.push(im);
+  links.push(it);save();renderLM();e.target.reset();newImg=null;$('lfl').classList.remove('has');$('lfl').firstChild.textContent='📷 Photo'});
+$('lclose').onclick=()=>$('lm').classList.remove('show');
+$('lreset').onclick=()=>{links=defaults.slice();save();renderLM()};
+renderDock();
+
+/* =============== FOCUS TIMER + AMBIENT =============== */
+let mins=25,left=1500,iv=null,endAt=0;const C=2*Math.PI*45;$('tarc').style.strokeDasharray=C;
+let sessions=store.get('nt_sess',{d:'',n:0});const today=new Date().toDateString();if(sessions.d!==today)sessions={d:today,n:0};
+function showT(){$('tdisp').textContent=`${pad(Math.floor(left/60))}:${pad(left%60)}`;$('tarc').style.strokeDashoffset=C*(1-left/(mins*60));
+  $('tstate').textContent=iv?'pause':(left<mins*60?'resume':'start');document.title=iv?`${$('tdisp').textContent} · Focus`:'Start';
+  $('streak').textContent=sessions.n?`${'●'.repeat(Math.min(sessions.n,8))} ${sessions.n} today`:''}
+function chime(){try{const a=new AudioContext();[523,659,784].forEach((f,i)=>{const o=a.createOscillator(),g=a.createGain();o.type='sine';o.frequency.value=f;o.connect(g);g.connect(a.destination);
+  const t=a.currentTime+i*.18;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.18,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+1.2);o.start(t);o.stop(t+1.3)})}catch(e){}}
+function stopT(){clearInterval(iv);iv=null;showT()}
+function toggleTimer(){if(iv){stopT();return}endAt=Date.now()+left*1000;
+  iv=setInterval(()=>{left=Math.max(0,Math.round((endAt-Date.now())/1000));showT();
+    if(!left){stopT();chime();if(mins!==5){sessions.n++;store.set('nt_sess',sessions)}left=mins*60;showT()}},250);showT()}
+$('tring').onclick=toggleTimer;
+$('treset').onclick=()=>{stopT();left=mins*60;showT()};
+document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-m]').forEach(x=>x.classList.remove('on'));b.classList.add('on');mins=+b.dataset.m;stopT();left=mins*60;showT()});
+showT();
+
+let actx,cur=null,nodes=[];
+function noiseBuf(type){const len=actx.sampleRate*4,b=actx.createBuffer(1,len,actx.sampleRate),d=b.getChannelData(0);let last=0;
+  for(let i=0;i<len;i++){const w=Math.random()*2-1;if(type==='brown'){last=(last+.02*w)/1.02;d[i]=last*3.5}else d[i]=w}return b}
+function startSound(t){
+  try{actx=actx||new AudioContext();actx.resume()}catch(e){return}
+  const src=actx.createBufferSource();src.buffer=noiseBuf(t==='brown'?'brown':'white');src.loop=true;
+  const f=actx.createBiquadFilter(),g=actx.createGain();g.gain.value=0;
+  if(t==='rain'){f.type='bandpass';f.frequency.value=1400;f.Q.value=.5}
+  else if(t==='brown'){f.type='lowpass';f.frequency.value=900}
+  else{f.type='bandpass';f.frequency.value=500;f.Q.value=1.2;
+    const lfo=actx.createOscillator(),lg=actx.createGain();lfo.frequency.value=.08;lg.gain.value=300;lfo.connect(lg);lg.connect(f.frequency);lfo.start();nodes.push(lfo)}
+  src.connect(f);f.connect(g);g.connect(actx.destination);src.start();g.gain.linearRampToValueAtTime(t==='rain'?.12:.22,actx.currentTime+1.5);nodes.push(src,g);
+  if(t==='rain'){const dr=setInterval(()=>{if(cur!=='rain')return clearInterval(dr);const o=actx.createBufferSource(),gg=actx.createGain(),hp=actx.createBiquadFilter();
+    o.buffer=src.buffer;hp.type='highpass';hp.frequency.value=2500+Math.random()*3000;gg.gain.value=.04*Math.random();o.connect(hp);hp.connect(gg);gg.connect(actx.destination);
+    o.start(0,Math.random()*3,.015)},70)}
+}
+function stopSound(){const ns=nodes;nodes=[];ns.forEach(n=>{try{if(n.gain){n.gain.cancelScheduledValues(actx.currentTime);n.gain.setValueAtTime(n.gain.value,actx.currentTime);n.gain.linearRampToValueAtTime(0,actx.currentTime+.6)}else setTimeout(()=>n.stop(),700)}catch(e){}})}
+document.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>{const t=b.dataset.s;stopSound();document.querySelectorAll('[data-s]').forEach(x=>x.classList.remove('on'));
+  if(cur===t){cur=null;return}cur=t;b.classList.add('on');startSound(t)});
+
+/* =============== TERM OF THE DAY =============== */
+const terms=[
+  ['Borborygmi','Gastroenterology','The rumbling, gurgling sounds made by gas and fluid moving through the intestines.'],
+  ['Philtrum','Anatomy · face','The vertical groove between the base of the nose and the upper lip.'],
+  ['Glabella','Anatomy · face','The smooth area of skin and bone between the eyebrows, just above the nose.'],
+  ['Lunula','Anatomy · skin','The pale crescent at the base of a fingernail — the visible part of the nail matrix.'],
+  ['Singultus','Clinical','The medical term for hiccups: involuntary spasms of the diaphragm followed by sudden glottis closure.'],
+  ['Sternutation','Clinical','The act of sneezing.'],
+  ['Epistaxis','ENT','A nosebleed. Most arise from Kiesselbach’s plexus on the anterior nasal septum.'],
+  ['Formication','Neurology','The sensation of insects crawling on or under the skin.'],
+  ['Pandiculation','Physiology','Stretching and yawning at the same time — what you do when you wake up.'],
+  ['Petechiae','Dermatology','Pinpoint red or purple spots caused by tiny capillary bleeds; they don’t blanch under pressure.'],
+  ['Ecchymosis','Dermatology','A bruise — blood that has escaped into the skin and subcutaneous tissue, larger than 1 cm.'],
+  ['Xerostomia','Oral medicine','Dryness of the mouth from reduced or absent saliva flow.'],
+  ['Diaphoresis','Clinical','Profuse sweating, often a sign worth noting (e.g. in myocardial infarction or hypoglycaemia).'],
+  ['Tachyphylaxis','Pharmacology','A rapid decrease in response to a drug after repeated doses over a short time.'],
+  ['Anosmia','Neurology','Complete loss of the sense of smell.'],
+  ['Myokymia','Neurology','Fine, involuntary quivering of a muscle — the classic harmless eyelid twitch.'],
+  ['Pruritus','Dermatology','Itching — an unpleasant sensation that provokes the urge to scratch.'],
+  ['Canthus','Anatomy · eye','The corner of the eye where the upper and lower eyelids meet (medial or lateral).'],
+  ['Hallux','Anatomy · foot','The big toe. Hallux valgus is the medical name for a bunion.'],
+  ['Rhytid','Plastic surgery','A wrinkle in the skin. Rhytidectomy is the surgical name for a facelift.'],
+  ['Blepharoplasty','Plastic surgery','Surgery on the eyelids to remove or reposition excess skin, muscle or fat.'],
+  ['Rhinoplasty','Plastic surgery','Surgery to reshape the nose, for function, appearance, or both.'],
+  ['Z-plasty','Plastic surgery','A technique using two transposed triangular flaps to lengthen a scar and change its direction.'],
+  ['Langer’s lines','Plastic surgery','Lines of natural skin tension; incisions placed along them tend to heal with finer scars.'],
+  ['Mammaplasty','Plastic surgery','Any reshaping surgery of the breast — augmentation, reduction or reconstruction.'],
+  ['Eschar','Burns','Dead, dry tissue that forms over a full-thickness burn. Escharotomy releases its constriction.'],
+  ['Synkinesis','Neurology','Involuntary movement accompanying a voluntary one — e.g. eye closing when smiling after facial palsy.'],
+  ['Eructation','Gastroenterology','The medical term for belching.'],
+  ['Nevus','Dermatology','A mole — a benign, usually pigmented, cluster of melanocytes in the skin.'],
+  ['Rhinorrhea','ENT','A runny nose — free discharge of thin nasal mucus.'],
+  ['Sphenopalatine ganglioneuralgia','Neurology','“Brain freeze” — the short headache after eating something very cold quickly.'],
+];
+const dayIdx=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/864e5);
+let ti=dayIdx%terms.length;
+function showTerm(){const[t,c,d]=terms[ti];$('term').textContent=t;$('tcat').textContent=c;$('tdef').textContent=d;$('flip').classList.remove('on')}
+$('flip').onclick=()=>$('flip').classList.toggle('on');
+$('nextTerm').onclick=()=>{ti=(ti+1)%terms.length;$('flip').classList.remove('on');setTimeout(showTerm,250)};
+showTerm();
+
+/* =============== COUNTDOWN =============== */
+let cd=store.get('nt_cd',null);
+function defaultCd(){const y=new Date().getFullYear()+1;return{n:`New Year ${y}`,t:new Date(y,0,1).getTime()}}
+function cdTick(d){
+  const c=cd||defaultCd();let ms=c.t-d;$('cdName').textContent=c.n;
+  if(ms<=0){$('cdBig').innerHTML='Today 🎉';$('cdSub').textContent='';}
+  else{const D=Math.floor(ms/864e5),H=Math.floor(ms/36e5)%24,M=Math.floor(ms/6e4)%60,S=Math.floor(ms/1e3)%60;
+    $('cdBig').innerHTML=`${D}<small>days</small>`;$('cdSub').textContent=`${pad(H)}h ${pad(M)}m ${pad(S)}s`}
+  const y0=new Date(d.getFullYear(),0,1),y1=new Date(d.getFullYear()+1,0,1),yp=(d-y0)/(y1-y0);
+  $('ybar').style.width=(yp*100).toFixed(2)+'%';$('yl').textContent=`${d.getFullYear()} · ${(yp*100).toFixed(1)}% done`;$('yr').textContent=`${Math.ceil((y1-d)/864e5)} days left`;
+}
+$('cdEdit').onclick=()=>{const c=cd||defaultCd();$('cn').value=c.n;const dt=new Date(c.t);$('cd').value=`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;$('cm').classList.add('show')};
+$('cclose').onclick=()=>$('cm').classList.remove('show');
+$('cform').addEventListener('submit',e=>{e.preventDefault();cd={n:$('cn').value.trim(),t:new Date($('cd').value).getTime()};store.set('nt_cd',cd);$('cm').classList.remove('show');tick()});
+
+/* =============== QUOTE =============== */
+const lines=['“The good physician treats the disease; the great physician treats the patient.” — Osler','“Wherever the art of medicine is loved, there is also a love of humanity.” — Hippocrates',
+  '“Medicine is a science of uncertainty and an art of probability.” — Osler','“Well begun is half done.” — Aristotle','“We are what we repeatedly do.” — Durant, on Aristotle','“Primum non nocere.”'];
+$('quote').textContent=lines[dayIdx%lines.length];
+
+document.querySelectorAll('.modal').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('show')}));
+tick();setInterval(tick,1000);
+</script>
+</body>
+</html>
